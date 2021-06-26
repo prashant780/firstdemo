@@ -1,0 +1,54 @@
+FROM centos:centos7
+##LABEL maintainer="RStudio Docker <docker@rstudio.com>"
+
+RUN yum -y update && \
+    yum -y install \
+    libicu-devel \
+    sudo \
+    texlive \
+    vim \
+    wget && \
+    yum install -y centos-release-scl && \
+    yum install -y devtoolset-8-gcc \
+    devtoolset-8-gcc-c++ \
+    devtoolset-8-gcc-gfortran && \
+    yum clean all
+  && useradd rstudio \
+  && echo "rstudio:rstudio" | chpasswd \
+	&& mkdir /home/rstudio \
+	&& chown rstudio:rstudio /home/rstudio \
+	&& addgroup rstudio staff \
+  ## Prevent rstudio from deciding to use /usr/bin/R if a user yum install installs a package
+  &&  echo 'rsession-which-r=/opt/R/R-3.6.3/bin/R' >> /etc/rstudio/rserver.conf \
+  ## use more robust file locking to avoid errors when using shared volumes:
+  && echo 'lock-type=advisory' >> /etc/rstudio/file-locks \
+  mkdir -p /opt/pandoc && \
+    wget -O /opt/pandoc/pandoc.gz https://files.r-hub.io/pandoc/linux-64/pandoc.gz && \
+    gzip -d /opt/pandoc/pandoc.gz && \
+    chmod +x /opt/pandoc/pandoc && \
+    ln -s /opt/pandoc/pandoc /usr/bin/pandoc && \
+    wget -O /opt/pandoc/pandoc-citeproc.gz https://files.r-hub.io/pandoc/linux-64/pandoc-citeproc.gz && \
+    gzip -d /opt/pandoc/pandoc-citeproc.gz && \
+    chmod +x /opt/pandoc/pandoc-citeproc && \
+    ln -s /opt/pandoc/pandoc-citeproc /usr/bin/pandoc-citeproc
+
+# CentOS 7 ships with an older version of C++, which is too old for
+# compiling many R packages. This installs an updated software collection
+# that provides newer versions of C/C++.
+#
+# See these references:
+# https://access.redhat.com/documentation/en-us/red_hat_software_collections/3/html/3.2_release_notes/chap-usage#sect-Usage-Use
+# https://access.redhat.com/solutions/527703
+#
+# Redhat Software Collections for updated C++
+
+# Set default locale
+ENV LANG en_US.UTF-8
+ENV PATH=/usr/lib/rstudio-server/bin:$PATH
+ARG RSTUDIO_VERSION
+# Set default timezone
+ENV TZ UTC
+EXPOSE 8787
+VOLUME /home/rstudio/prashant
+
+CMD ["/init"]
