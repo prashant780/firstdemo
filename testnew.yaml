@@ -13,4 +13,5 @@ spec:
       securityContext:
         privileged: true
         Newtest: Man1
-        Can you: yes 
+        Can you: yes
+        Can you do this: no 
