@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rsconnect
+  labels:
+    app: web
+spec:
+  containers:
+    - name: front-end
+      image: prashant.azurecr.io/centosupdatedrbaseupdate:v4
+      ports:
+        - containerPort: 3939
+      securityContext:
+        privileged: true
+        Newtest: Man
